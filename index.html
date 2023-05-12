@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schema-Driven Logistics Form Builder</title>
+  <meta name="description" content="A black-and-white builder-architecture story about a schema-driven logistics form builder: bottleneck, schema design, rendering, validation, versioning, and governance.">
+  <style>
+    :root {
+      --paper: #ffffff;
+      --panel: #f3f3f3;
+      --panel-2: #ebebeb;
+      --line: #d0d0d0;
+      --line-strong: #7c7c7c;
+      --ink: #111111;
+      --ink-soft: #3f3f3f;
+      --ink-faint: #6a6a6a;
+      --black: #000000;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      color: var(--ink);
+      background:
+        linear-gradient(to right, rgba(0, 0, 0, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.035) 1px, transparent 1px),
+        linear-gradient(180deg, #fafafa 0%, #f0f0f0 100%);
+      background-size: 28px 28px, 28px 28px, auto;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .page {
+      width: min(1400px, calc(100% - 40px));
+      margin: 24px auto 48px;
+      border: 2px solid var(--black);
+      background: var(--paper);
+      box-shadow: 12px 12px 0 #d8d8d8;
+    }
+
+    .masthead {
+      padding: 28px;
+      border-bottom: 2px solid var(--black);
+      background:
+        linear-gradient(180deg, #ffffff 0%, #f6f6f6 100%);
+    }
+
+    .mast-grid {
+      display: grid;
+      grid-template-columns: 2.1fr 1fr;
+      gap: 22px;
+    }
+
+    .kicker,
+    .section-tag,
+    .chip,
+    .rail-title,
+    .code-label,
+    h2,
+    .caption-label,
+    .mini-title,
+    .toc-title {
+      font-family: "Courier New", "Lucida Console", Monaco, monospace;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .kicker {
+      display: inline-block;
+      padding: 7px 10px;
+      border: 1px solid var(--black);
+      background: #f0f0f0;
+      font-size: 0.73rem;
+    }
+
+    h1 {
+      margin: 14px 0 10px;
+      font-size: clamp(2.4rem, 4.8vw, 4.9rem);
+      line-height: 0.95;
+      text-transform: uppercase;
+      letter-spacing: -0.04em;
+    }
+
+    .lede {
+      max-width: 67ch;
+      margin: 0;
+      font-size: 1.08rem;
+      line-height: 1.75;
+      color: var(--ink-soft);
+    }
+
+    .mast-notes {
+      display: grid;
+      gap: 10px;
+    }
+
+    .note-card,
+    .figure,
+    .snippet,
+    .mini-card,
+    .toc,
+    .section {
+      border: 1px solid var(--black);
+      background: var(--paper);
+    }
+
+    .note-card {
+      padding: 14px;
+      background: linear-gradient(180deg, #f7f7f7 0%, #eeeeee 100%);
+    }
+
+    .note-card p {
+      margin: 8px 0 0;
+      color: var(--ink-soft);
+      line-height: 1.55;
+      font-size: 0.94rem;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .meta-cell {
+      padding: 12px 12px 14px;
+      border: 1px solid var(--black);
+      background: #f7f7f7;
+    }
+
+    .chip {
+      display: inline-block;
+      font-size: 0.68rem;
+      color: var(--ink-faint);
+    }
+
+    .meta-cell strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 1rem;
+      line-height: 1.35;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 0;
+    }
+
+    .rail {
+      padding: 24px;
+      border-right: 2px solid var(--black);
+      background: linear-gradient(180deg, #f4f4f4 0%, #ededed 100%);
+    }
+
+    .rail-stack {
+      display: grid;
+      gap: 16px;
+      position: sticky;
+      top: 16px;
+    }
+
+    .toc,
+    .mini-card {
+      padding: 14px;
+      background: #ffffff;
+    }
+
+    .toc ol,
+    .mini-card ul {
+      margin: 12px 0 0;
+      padding-left: 18px;
+    }
+
+    .toc li,
+    .mini-card li {
+      margin: 0 0 10px;
+      line-height: 1.4;
+      color: var(--ink-soft);
+    }
+
+    .rail-title,
+    .toc-title,
+    .mini-title {
+      font-size: 0.76rem;
+      margin: 0;
+      color: var(--ink-faint);
+    }
+
+    .content {
+      padding: 24px;
+      display: grid;
+      gap: 20px;
+      background:
+        linear-gradient(180deg, rgba(0, 0, 0, 0.015) 0%, rgba(0, 0, 0, 0) 24%);
+    }
+
+    .section {
+      padding: 22px;
+      background:
+        linear-gradient(180deg, #ffffff 0%, #f9f9f9 100%);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line-strong);
+    }
+
+    .section-tag {
+      min-width: 50px;
+      padding: 7px 8px;
+      border: 1px solid var(--black);
+      text-align: center;
+      font-size: 0.75rem;
+      background: #f0f0f0;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(1rem, 1.7vw, 1.2rem);
+      padding: 9px 12px;
+      border: 1px solid var(--black);
+      background: #efefef;
+      font-weight: 700;
+    }
+
+    .section p {
+      margin: 0 0 1rem;
+      line-height: 1.8;
+      font-size: 1.02rem;
+      color: var(--ink);
+    }
+
+    .section p:last-child,
+    .section ul:last-child,
+    .section figure:last-child,
+    .section pre:last-child {
+      margin-bottom: 0;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .story-list {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .story-list li {
+      margin: 0 0 12px;
+      line-height: 1.7;
+      color: var(--ink-soft);
+    }
+
+    .callout-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .callout {
+      border: 1px solid var(--black);
+      padding: 12px;
+      background: #f6f6f6;
+    }
+
+    .callout strong {
+      display: block;
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+      font-family: "Courier New", "Lucida Console", Monaco, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .callout p {
+      margin: 0;
+      font-size: 0.92rem;
+      line-height: 1.55;
+      color: var(--ink-soft);
+    }
+
+    .figure {
+      margin: 18px 0;
+      padding: 16px;
+      background: linear-gradient(180deg, #fbfbfb 0%, #f1f1f1 100%);
+    }
+
+    .figure svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 1px solid var(--black);
+      background: #ffffff;
+    }
+
+    figcaption {
+      margin-top: 10px;
+      line-height: 1.6;
+      color: var(--ink-soft);
+      font-size: 0.94rem;
+    }
+
+    .caption-label {
+      display: inline-block;
+      margin-right: 8px;
+      font-size: 0.72rem;
+      color: var(--ink-faint);
+    }
+
+    .snippet-wrap {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 12px;
+    }
+
+    .snippet {
+      overflow: hidden;
+      background: #ffffff;
+    }
+
+    .code-label {
+      padding: 10px 12px;
+      font-size: 0.72rem;
+      border-bottom: 1px solid var(--black);
+      background: #efefef;
+      color: var(--ink-faint);
+    }
+
+    pre {
+      margin: 0;
+      padding: 14px;
+      overflow-x: auto;
+      font-size: 0.85rem;
+      line-height: 1.65;
+      color: #1f1f1f;
+      background: #fbfbfb;
+      font-family: "Courier New", "Lucida Console", Monaco, monospace;
+    }
+
+    code {
+      font-family: "Courier New", "Lucida Console", Monaco, monospace;
+    }
+
+    .grid-two {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 10px;
+    }
+
+    .plain-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.94rem;
+    }
+
+    .plain-table th,
+    .plain-table td {
+      padding: 10px 12px;
+      border: 1px solid var(--black);
+      text-align: left;
+      vertical-align: top;
+      line-height: 1.55;
+    }
+
+    .plain-table th {
+      background: #efefef;
+      font-family: "Courier New", "Lucida Console", Monaco, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 0.72rem;
+    }
+
+    .foot {
+      padding: 18px 24px 24px;
+      border-top: 2px solid var(--black);
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      background: #f4f4f4;
+      font-size: 0.9rem;
+      color: var(--ink-soft);
+    }
+
+    @media (max-width: 1080px) {
+      .mast-grid,
+      .layout,
+      .split,
+      .snippet-wrap,
+      .grid-two {
+        grid-template-columns: 1fr;
+      }
+
+      .rail {
+        border-right: 0;
+        border-bottom: 2px solid var(--black);
+      }
+
+      .rail-stack {
+        position: static;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .page {
+        width: calc(100% - 20px);
+        margin: 10px auto 24px;
+        box-shadow: 8px 8px 0 #d8d8d8;
+      }
+
+      .masthead,
+      .rail,
+      .content,
+      .foot {
+        padding: 16px;
+      }
+
+      .section {
+        padding: 16px;
+      }
+
+      .meta-grid,
+      .callout-strip {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 2.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="masthead">
+      <div class="mast-grid">
+        <div>
+          <p class="kicker">Builder Architecture Story / Logistics Systems / Schema Engine</p>
+          <h1>Schema-Driven Logistics Form Builder</h1>
+          <p class="lede">The work starts with an unglamorous failure mode: every minor form change in a logistics operation lands on a developer queue, even when the change is only a new inspection field, a tighter validation rule, a different approval path, or a recurring handoff task. This page treats the product as a built system rather than a feature brochure. It follows the bottleneck, then the schema, then the renderer, then the rule layer, then the version rail, and it closes where operations software usually becomes credible or collapses: governance and auditability.</p>
+          <div class="meta-grid">
+            <div class="meta-cell">
+              <span class="chip">Origin</span>
+              <strong>Discovery with operations users on roles, approvals, and repetitive field workflows</strong>
+            </div>
+            <div class="meta-cell">
+              <span class="chip">Core Mechanism</span>
+              <strong>Schema-driven fields, conditions, templates, and scheduling instead of hand-coded screens</strong>
+            </div>
+            <div class="meta-cell">
+              <span class="chip">Architectural End State</span>
+              <strong>Repeatable authoring with version control, audit trails, and measurable data quality</strong>
+            </div>
+          </div>
+        </div>
+        <div class="mast-notes">
+          <div class="note-card">
+            <p class="rail-title">Builder Brief</p>
+            <p>Rectilinear layout, monochrome hierarchy, and panel labels are deliberate. The product is about controlled assembly. The page therefore reads like a build board: stock, joinery, output, checks, revisions, and signoff.</p>
+          </div>
+          <div class="note-card">
+            <p class="rail-title">Why This Architecture Exists</p>
+            <p>Warehouse teams, yard supervisors, cold-chain staff, and compliance leads do not need a reinvention of forms. They need dependable form changes without waiting for an application release every time the operation learns something new.</p>
+          </div>
+          <div class="note-card">
+            <p class="rail-title">Product Scope</p>
+            <p>Dynamic fields, conditional logic, task templates with assignees and dependencies, recurring schedules, notifications, audit trails, and analytics for completion rate, turnaround time, and data quality.</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="rail">
+        <div class="rail-stack">
+          <nav class="toc" aria-label="Table of contents">
+            <p class="toc-title">Build Panels</p>
+            <ol>
+              <li><a href="#bottleneck">Developer Bottleneck</a></li>
+              <li><a href="#schema">Schema Stock</a></li>
+              <li><a href="#renderer">Render Line</a></li>
+              <li><a href="#validation">Rule Gate</a></li>
+              <li><a href="#workflow">Template Workflow</a></li>
+              <li><a href="#versioning">Version Rail</a></li>
+              <li><a href="#governance">Governance and Auditability</a></li>
+            </ol>
+          </nav>
+
+          <section class="mini-card">
+            <p class="mini-title">Operational Pressures</p>
+            <ul>
+              <li>Simple form edits were trapped behind developer lead time.</li>
+              <li>Offline recurring checks and ad hoc reminders created missed steps.</li>
+              <li>Inconsistent field definitions damaged completion reporting and downstream analytics.</li>
+            </ul>
+          </section>
+
+          <section class="mini-card">
+            <p class="mini-title">Design Discipline</p>
+            <ul>
+              <li>Keep forms declarative.</li>
+              <li>Keep rendering deterministic.</li>
+              <li>Keep audits attached to every published revision.</li>
+              <li>Keep workflow state separate from form definition.</li>
+            </ul>
+          </section>
+
+          <section class="mini-card">
+            <p class="mini-title">Reader Note</p>
+            <ul>
+              <li>The story is product-architectural, not promotional.</li>
+              <li>Code excerpts are minimal and illustrative, included only where the mechanism benefits from precision.</li>
+            </ul>
+          </section>
+        </div>
+      </aside>
+
+      <main class="content">
+        <section class="section" id="bottleneck">
+          <div class="section-head">
+            <div class="section-tag">Panel 01</div>
+            <h2>Developer Bottleneck</h2>
+          </div>
+          <div class="split">
+            <div>
+              <p>The first design fact was not technical. It was organizational. Operations teams already knew what they wanted to capture: trailer seal checks, dock release confirmations, cold-chain exceptions, handover signatures, rejected-load notes, recurring safety walkarounds. Yet every variation in those workflows had to be translated into a developer request because the application expressed forms as hard-coded screens instead of authored structures. That made ordinary operational learning look like software backlog churn.</p>
+              <p>Once that pattern settles in, two forms of waste appear at the same time. The first is queue waste. Developers spend time adding or removing fields, changing required states, wiring straightforward branching logic, or duplicating a form for a new facility. The second is operational waste. Supervisors start carrying uncontrolled copies in spreadsheets, messaging apps, paper checklists, or locally improvised documents because the system changes too slowly. The result is not only delay. It is divergence: different sites collect different data for the same process, completion definitions drift, approvals become inconsistent, and reporting loses its footing.</p>
+              <p>The architecture for a schema-driven form builder emerges from that tension. It is not trying to make forms decorative or infinitely flexible. It is trying to pull routine change out of the application release cycle and relocate it into a governed authoring layer. In other words, the product is a controlled construction yard for operational records. The unit of change is a schema revision, not a UI rewrite.</p>
+            </div>
+            <div>
+              <table class="plain-table" aria-label="Bottleneck comparison">
+                <thead>
+                  <tr>
+                    <th>Before</th>
+                    <th>After</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Form changes enter engineering backlog.</td>
+                    <td>Form changes enter schema authoring and review flow.</td>
+                  </tr>
+                  <tr>
+                    <td>Validation logic is duplicated across screens.</td>
+                    <td>Validation logic is declared once and interpreted by the engine.</td>
+                  </tr>
+                  <tr>
+                    <td>Recurring tasks are scheduled outside the product.</td>
+                    <td>Task templates and schedules remain attached to the same source definition.</td>
+                  </tr>
+                  <tr>
+                    <td>Audits reconstruct intent after the fact.</td>
+                    <td>Audits record which published schema version drove each submission.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="callout-strip">
+            <div class="callout">
+              <strong>Discovery</strong>
+              <p>Roles, approval paths, and site-specific exceptions were mapped before the schema model was fixed.</p>
+            </div>
+            <div class="callout">
+              <strong>Constraint</strong>
+              <p>Operational staff needed faster authoring and reuse, but not uncontrolled mutation of regulated forms.</p>
+            </div>
+            <div class="callout">
+              <strong>Architectural Choice</strong>
+              <p>Represent form intent as data, keep the renderer thin, and reserve code changes for new primitives.</p>
+            </div>
+          </div>
+          <p>The iterative UAT cycles in the project context matter here for the same reason. A hard-coded application usually turns user feedback into a negotiation over delivery slots. A schema-led system turns much of that same feedback into revision work on authored packages. That does not eliminate review. It changes who waits. Operations authors can refine structure, labels, branching, and reuse patterns while engineering focuses on the smaller class of changes that actually extend the platform.</p>
+        </section>
+
+        <section class="section" id="schema">
+          <div class="section-head">
+            <div class="section-tag">Panel 02</div>
+            <h2>Schema Stock</h2>
+          </div>
+          <p>A builder architecture begins with stock. In this product the stock is the schema: the smallest durable representation of what a logistics team wants to ask, require, hide, compute, assign, and review. The schema is not only a field list. It is a declaration of operational structure. A field has a type, label, storage key, default state, validation policy, display conditions, and often a reporting role. A form contains sections and layout hints, but those are secondary. The essential design problem is semantic consistency. If “seal_integrity” means one thing at Dock A and another at Dock B, the renderer is already downstream of the real failure.</p>
+          <p>The discovery work therefore matters directly to schema design. Conversations with operations users are where roles, exception paths, and approval responsibility become explicit enough to model. The engine can only be generic if the definitions are specific. A refrigerated-load intake form, for example, may require a temperature field, but it also needs to know who can override a failed threshold, whether that override forces a comment, and whether a follow-up task should be created for quality review. Those behaviors belong in data declarations because they recur across workflows.</p>
+          <p>The practical shape is usually a composition of reusable primitives: fields, rules, templates, notification hooks, and role bindings. Reuse matters because the gain is not merely faster authoring of one form. The gain is that the same definition can be shared across facilities while allowing a controlled layer for local variation. That is why schema design often separates stable building blocks from a published assembly. Common field types, rule fragments, and task patterns can be maintained centrally while form packages reference them by version.</p>
+          <p>It also helps to distinguish user-facing labels from reporting keys. Operations language can evolve for clarity while storage contracts remain stable. Without that separation, a harmless copy edit becomes a data break. In a logistics setting, where the same field may feed completion analytics, exception analysis, and compliance review, the schema must preserve durable identifiers even when the surface vocabulary changes. Builder systems succeed when they make those boundaries normal rather than heroic.</p>
+
+          <div class="snippet-wrap">
+            <div class="snippet">
+              <div class="code-label">Schema Fragment</div>
+              <pre><code>{
+  "formId": "dispatch-checkin",
+  "version": "3.2.0",
+  "fields": [
+    { "key": "driver_name", "type": "text", "required": true },
+    { "key": "trailer_temp_c", "type": "number", "required": false },
+    { "key": "seal_status", "type": "select", "options": ["intact", "broken"] }
+  ],
+  "rules": [
+    { "when": "seal_status == 'broken'", "require": ["exception_reason"] }
+  ]
+}</code></pre>
+            </div>
+            <div class="snippet">
+              <div class="code-label">Template Binding</div>
+              <pre><code>{
+  "templateId": "cold-chain-receipt",
+  "forms": ["dispatch-checkin", "temp-exception-review"],
+  "assignees": ["gate-clerk", "qa-supervisor"],
+  "dependencies": [
+    ["dispatch-checkin", "temp-exception-review"]
+  ],
+  "schedule": { "type": "recurring", "cron": "0 */4 * * *" }
+}</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="renderer">
+          <div class="section-head">
+            <div class="section-tag">Panel 03</div>
+            <h2>Render Line</h2>
+          </div>
+          <p>Once form intent is expressed as schema, the next architectural question is how little the renderer can know. A useful renderer is not a second authoring system hidden in code. Its job is to load the published schema package, resolve field components, interpret layout instructions, apply role-based visibility, and produce a deterministic screen state. That discipline matters because it keeps the cost of adding a new form close to zero so long as the existing primitive set is sufficient.</p>
+          <p>The renderer therefore behaves more like a compiler stage than a hand-built page. It takes inputs from multiple racks: field definitions, validation rules, template context, facility configuration, and the active user role. From there it assembles a runtime tree. Each node in that tree knows what widget to mount, which state path to read, what hint text to show, and whether it is blocked by a condition that depends on other fields. The resulting form is not special code for “dispatch check-in” or “yard transfer”. It is a projection of authored data through a stable runtime.</p>
+          <p>The key consequence is maintainability. When operations teams ask for a new yes-or-no field or a conditional comment block, the platform should not branch the application. Only requests for genuinely new primitives should reach engineering: signature capture, barcode scan widgets, offline attachments, or a new rule function. Everything else belongs to authored structure.</p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 1120 620" role="img" aria-labelledby="loom-title loom-desc">
+              <title id="loom-title">Schema loom for logistics form builder</title>
+              <desc id="loom-desc">Fields, rules, and templates feed a woven schema plane that renders a logistics form and branches downward into version history and audit events.</desc>
+              <rect x="20" y="20" width="1080" height="580" fill="#fcfcfc" stroke="#000" stroke-width="2"/>
+              <rect x="58" y="66" width="196" height="152" fill="#f2f2f2" stroke="#000" stroke-width="2"/>
+              <text x="78" y="96" font-family="Courier New, monospace" font-size="22" fill="#000">FIELD STOCK</text>
+              <rect x="78" y="116" width="156" height="22" fill="#fff" stroke="#000"/>
+              <rect x="78" y="148" width="156" height="22" fill="#fff" stroke="#000"/>
+              <rect x="78" y="180" width="156" height="22" fill="#fff" stroke="#000"/>
+              <text x="88" y="132" font-family="Courier New, monospace" font-size="13" fill="#000">driver_name : text</text>
+              <text x="88" y="164" font-family="Courier New, monospace" font-size="13" fill="#000">seal_status : select</text>
+              <text x="88" y="196" font-family="Courier New, monospace" font-size="13" fill="#000">trailer_temp_c : number</text>
+
+              <rect x="58" y="246" width="196" height="124" fill="#ededed" stroke="#000" stroke-width="2"/>
+              <text x="78" y="278" font-family="Courier New, monospace" font-size="22" fill="#000">RULE SET</text>
+              <text x="78" y="315" font-family="Courier New, monospace" font-size="13" fill="#000">if seal_status = broken</text>
+              <text x="78" y="338" font-family="Courier New, monospace" font-size="13" fill="#000">require exception_reason</text>
+
+              <rect x="58" y="398" width="196" height="132" fill="#f2f2f2" stroke="#000" stroke-width="2"/>
+              <text x="78" y="430" font-family="Courier New, monospace" font-size="22" fill="#000">TEMPLATES</text>
+              <text x="78" y="466" font-family="Courier New, monospace" font-size="13" fill="#000">cold-chain receipt</text>
+              <text x="78" y="489" font-family="Courier New, monospace" font-size="13" fill="#000">yard transfer check</text>
+
+              <rect x="328" y="96" width="262" height="374" fill="#ffffff" stroke="#000" stroke-width="2"/>
+              <text x="349" y="126" font-family="Courier New, monospace" font-size="22" fill="#000">SCHEMA LOOM</text>
+              <line x1="360" y1="160" x2="560" y2="160" stroke="#000" stroke-width="2"/>
+              <line x1="360" y1="192" x2="560" y2="192" stroke="#000" stroke-width="2"/>
+              <line x1="360" y1="224" x2="560" y2="224" stroke="#000" stroke-width="2"/>
+              <line x1="360" y1="256" x2="560" y2="256" stroke="#000" stroke-width="2"/>
+              <line x1="360" y1="288" x2="560" y2="288" stroke="#000" stroke-width="2"/>
+              <line x1="360" y1="320" x2="560" y2="320" stroke="#000" stroke-width="2"/>
+              <line x1="360" y1="352" x2="560" y2="352" stroke="#000" stroke-width="2"/>
+              <line x1="360" y1="384" x2="560" y2="384" stroke="#000" stroke-width="2"/>
+              <line x1="392" y1="148" x2="392" y2="404" stroke="#8c8c8c" stroke-width="2"/>
+              <line x1="424" y1="148" x2="424" y2="404" stroke="#8c8c8c" stroke-width="2"/>
+              <line x1="456" y1="148" x2="456" y2="404" stroke="#8c8c8c" stroke-width="2"/>
+              <line x1="488" y1="148" x2="488" y2="404" stroke="#8c8c8c" stroke-width="2"/>
+              <line x1="520" y1="148" x2="520" y2="404" stroke="#8c8c8c" stroke-width="2"/>
+              <text x="350" y="438" font-family="Courier New, monospace" font-size="13" fill="#000">bind fields + conditions + template context</text>
+
+              <path d="M254 142 C290 142, 300 140, 328 174" fill="none" stroke="#000" stroke-width="3"/>
+              <path d="M254 307 C292 307, 302 304, 328 254" fill="none" stroke="#000" stroke-width="3"/>
+              <path d="M254 463 C290 463, 300 460, 328 366" fill="none" stroke="#000" stroke-width="3"/>
+
+              <rect x="658" y="108" width="370" height="276" fill="#f8f8f8" stroke="#000" stroke-width="2"/>
+              <text x="682" y="140" font-family="Courier New, monospace" font-size="22" fill="#000">RENDERED FORM</text>
+              <rect x="686" y="164" width="314" height="34" fill="#fff" stroke="#000"/>
+              <rect x="686" y="220" width="314" height="34" fill="#fff" stroke="#000"/>
+              <rect x="686" y="276" width="152" height="34" fill="#fff" stroke="#000"/>
+              <rect x="848" y="276" width="152" height="34" fill="#efefef" stroke="#000"/>
+              <rect x="686" y="332" width="314" height="26" fill="#000"/>
+              <text x="700" y="187" font-family="Courier New, monospace" font-size="13" fill="#000">Driver name</text>
+              <text x="700" y="243" font-family="Courier New, monospace" font-size="13" fill="#000">Seal status</text>
+              <text x="700" y="299" font-family="Courier New, monospace" font-size="13" fill="#000">Temperature</text>
+              <text x="860" y="299" font-family="Courier New, monospace" font-size="13" fill="#000">Exception note</text>
+              <text x="700" y="350" font-family="Courier New, monospace" font-size="12" fill="#fff">SUBMIT CHECK-IN</text>
+
+              <path d="M590 284 L658 248" fill="none" stroke="#000" stroke-width="3"/>
+              <polygon points="650,244 658,248 651,255" fill="#000"/>
+
+              <line x1="814" y1="384" x2="814" y2="538" stroke="#000" stroke-width="3"/>
+              <polygon points="808,530 814,538 820,530" fill="#000"/>
+
+              <rect x="666" y="452" width="170" height="94" fill="#fff" stroke="#000" stroke-width="2"/>
+              <text x="685" y="484" font-family="Courier New, monospace" font-size="18" fill="#000">VERSION RAIL</text>
+              <text x="685" y="512" font-family="Courier New, monospace" font-size="12" fill="#000">v3.0 draft</text>
+              <text x="685" y="530" font-family="Courier New, monospace" font-size="12" fill="#000">v3.1 approved</text>
+
+              <rect x="860" y="452" width="170" height="94" fill="#ededed" stroke="#000" stroke-width="2"/>
+              <text x="884" y="484" font-family="Courier New, monospace" font-size="18" fill="#000">AUDIT LOG</text>
+              <text x="882" y="512" font-family="Courier New, monospace" font-size="12" fill="#000">publish event</text>
+              <text x="882" y="530" font-family="Courier New, monospace" font-size="12" fill="#000">submission trace</text>
+            </svg>
+            <figcaption><span class="caption-label">Figure A</span>The schema loom expresses the core architectural move: field stock, rules, and task templates are woven into a publishable form package, and the rendered result remains attached to a lower rail for version history and audit events rather than floating as an untraceable screen.</figcaption>
+          </figure>
+
+          <div class="snippet">
+            <div class="code-label">Renderer Shape</div>
+            <pre><code>function renderForm(schema, context) {
+  return schema.fields
+    .filter((field) => isVisible(field, context))
+    .map((field) => mountWidget(field.type, {
+      key: field.key,
+      rules: rulesFor(field, schema.rules),
+      value: context.values[field.key]
+    }));
+}</code></pre>
+          </div>
+        </section>
+
+        <section class="section" id="validation">
+          <div class="section-head">
+            <div class="section-tag">Panel 04</div>
+            <h2>Rule Gate</h2>
+          </div>
+          <p>Rendering without validation is only layout. In logistics operations, the value of a form often lies in what it refuses to let through. A broken seal without an explanation, a recurring inspection submitted without a temperature range, a carrier handoff with a missing signature, or a job marked complete before its dependency closes are not neutral data quality issues. They are operational defects. The validation layer therefore has to enforce more than type safety. It has to encode business insistence.</p>
+          <p>That is why conditional logic belongs alongside validation. Requiredness is frequently contextual. A temperature field may be optional for dry cargo and mandatory for refrigerated loads. An exception note may appear only when a threshold fails. A supervisor approval field may unlock only when the submitter role lacks override authority. Rather than scattering these checks through imperative event handlers, the engine keeps them as declarative rules and resolves them against current form state and workflow context.</p>
+          <p>The design payoff is consistency across authoring, runtime behavior, and audit review. Because the same rule declarations can be evaluated at render time, submit time, and analytics time, the system can answer stronger questions later: which sites trigger the most conditional exceptions, which validations generate the most retries, and whether a rule change improved data quality or simply shifted friction elsewhere. That is the difference between a form system and a controlled input surface.</p>
+
+          <div class="grid-two">
+            <div class="snippet">
+              <div class="code-label">Validation Policy</div>
+              <pre><code>{
+  "validators": [
+    {
+      "field": "trailer_temp_c",
+      "assert": "value &gt;= -30 &amp;&amp; value &lt;= 15",
+      "message": "Temperature must be within configured transport range"
+    },
+    {
+      "field": "exception_reason",
+      "when": "seal_status == 'broken'",
+      "assert": "present(value)"
+    }
+  ]
+}</code></pre>
+            </div>
+            <div class="snippet">
+              <div class="code-label">Submission Guard</div>
+              <pre><code>const errors = evaluate(schema.validators, values, context);
+if (errors.length) {
+  return {
+    status: "rejected",
+    errors,
+    schemaVersion: schema.version
+  };
+}</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="workflow">
+          <div class="section-head">
+            <div class="section-tag">Panel 05</div>
+            <h2>Template Workflow</h2>
+          </div>
+          <p>The architecture becomes operationally interesting when forms stop living alone. Most logistics work is not a single submission; it is a chain. A gate check leads to a quality review. A failed inspection creates a corrective task. A recurring sanitation checklist must be assigned, completed, escalated if late, and sometimes repeated on a fixed schedule. The product therefore binds forms into task templates with due dates, dependencies, assignees, and notification rules.</p>
+          <p>Keeping that template layer adjacent to the schema is important. If workflow orchestration is modeled somewhere else, authoring teams lose the ability to reason about the full process they are constructing. A form builder that cannot explain what happens after submit is only halfway built. By contrast, a template-aware builder can publish not just a screen but a sequence: who receives the task, what must happen first, when reminders fire, what event closes the loop, and how recurring jobs are materialized. This is where the product moves from capture to coordination.</p>
+          <p>Scheduling recurring work is especially revealing because it tests whether the system understands time as part of the process definition rather than an afterthought. Offline recurring jobs and ad hoc reminders are common precisely because many products stop at form submission. Here the schedule is part of the template package. Notifications derive from the same source, which means changes to timing, assignee logic, or dependency order can be reviewed as authored changes with audit consequences.</p>
+          <p>This is also where separation between form definition and task state becomes important. The template may say that a sanitation checklist repeats every shift and escalates after thirty minutes overdue, but the individual runs of that checklist need their own lifecycle records. One artifact defines the work. Another records each instance of the work. Mixing the two makes both scheduling and audit reconstruction harder than they need to be.</p>
+
+          <figure class="figure">
+            <svg viewBox="0 0 1120 560" role="img" aria-labelledby="workflow-title workflow-desc">
+              <title id="workflow-title">Task template workflow diagram</title>
+              <desc id="workflow-desc">A task template diagram showing the relationship between form packages, due dates, dependencies, assignees, schedules, notifications, and resulting audit evidence.</desc>
+              <rect x="20" y="20" width="1080" height="520" fill="#fcfcfc" stroke="#000" stroke-width="2"/>
+              <text x="54" y="68" font-family="Courier New, monospace" font-size="24" fill="#000">TASK TEMPLATE WORKFLOW</text>
+
+              <rect x="60" y="112" width="220" height="118" fill="#f2f2f2" stroke="#000" stroke-width="2"/>
+              <text x="86" y="146" font-family="Courier New, monospace" font-size="20" fill="#000">FORM PACKAGE</text>
+              <text x="86" y="176" font-family="Courier New, monospace" font-size="13" fill="#000">dispatch-checkin</text>
+              <text x="86" y="198" font-family="Courier New, monospace" font-size="13" fill="#000">temp-exception-review</text>
+
+              <rect x="330" y="76" width="220" height="86" fill="#fff" stroke="#000" stroke-width="2"/>
+              <text x="360" y="111" font-family="Courier New, monospace" font-size="18" fill="#000">DUE DATE RULE</text>
+              <text x="360" y="134" font-family="Courier New, monospace" font-size="12" fill="#000">+45 min from arrival</text>
+
+              <rect x="330" y="188" width="220" height="86" fill="#ededed" stroke="#000" stroke-width="2"/>
+              <text x="352" y="223" font-family="Courier New, monospace" font-size="18" fill="#000">DEPENDENCY MAP</text>
+              <text x="352" y="246" font-family="Courier New, monospace" font-size="12" fill="#000">review waits for check-in</text>
+
+              <rect x="330" y="300" width="220" height="86" fill="#fff" stroke="#000" stroke-width="2"/>
+              <text x="362" y="335" font-family="Courier New, monospace" font-size="18" fill="#000">ASSIGNEES</text>
+              <text x="362" y="358" font-family="Courier New, monospace" font-size="12" fill="#000">gate clerk / QA supervisor</text>
+
+              <rect x="330" y="412" width="220" height="86" fill="#ededed" stroke="#000" stroke-width="2"/>
+              <text x="358" y="447" font-family="Courier New, monospace" font-size="18" fill="#000">SCHEDULE</text>
+              <text x="358" y="470" font-family="Courier New, monospace" font-size="12" fill="#000">every 4 hours / every shift</text>
+
+              <rect x="618" y="170" width="220" height="118" fill="#fff" stroke="#000" stroke-width="2"/>
+              <text x="650" y="204" font-family="Courier New, monospace" font-size="20" fill="#000">TASK RUNNER</text>
+              <text x="650" y="234" font-family="Courier New, monospace" font-size="13" fill="#000">instantiate job</text>
+              <text x="650" y="256" font-family="Courier New, monospace" font-size="13" fill="#000">respect dependencies</text>
+
+              <rect x="618" y="330" width="220" height="96" fill="#f2f2f2" stroke="#000" stroke-width="2"/>
+              <text x="646" y="364" font-family="Courier New, monospace" font-size="18" fill="#000">NOTIFICATIONS</text>
+              <text x="646" y="387" font-family="Courier New, monospace" font-size="12" fill="#000">due soon / overdue / escalated</text>
+
+              <rect x="892" y="168" width="158" height="122" fill="#ededed" stroke="#000" stroke-width="2"/>
+              <text x="915" y="202" font-family="Courier New, monospace" font-size="18" fill="#000">OPERATORS</text>
+              <text x="915" y="230" font-family="Courier New, monospace" font-size="12" fill="#000">work queue</text>
+              <text x="915" y="250" font-family="Courier New, monospace" font-size="12" fill="#000">completion state</text>
+
+              <rect x="892" y="328" width="158" height="122" fill="#fff" stroke="#000" stroke-width="2"/>
+              <text x="926" y="362" font-family="Courier New, monospace" font-size="18" fill="#000">AUDIT</text>
+              <text x="915" y="390" font-family="Courier New, monospace" font-size="12" fill="#000">who was assigned</text>
+              <text x="915" y="410" font-family="Courier New, monospace" font-size="12" fill="#000">what was late</text>
+
+              <path d="M280 171 L330 119" stroke="#000" stroke-width="3" fill="none"/>
+              <path d="M280 171 L330 231" stroke="#000" stroke-width="3" fill="none"/>
+              <path d="M280 171 L330 343" stroke="#000" stroke-width="3" fill="none"/>
+              <path d="M280 171 L330 455" stroke="#000" stroke-width="3" fill="none"/>
+              <path d="M550 119 L618 205" stroke="#000" stroke-width="3" fill="none"/>
+              <path d="M550 231 L618 229" stroke="#000" stroke-width="3" fill="none"/>
+              <path d="M550 343 L618 229" stroke="#000" stroke-width="3" fill="none"/>
+              <path d="M550 455 L618 378" stroke="#000" stroke-width="3" fill="none"/>
+              <path d="M838 229 L892 229" stroke="#000" stroke-width="3" fill="none"/>
+              <path d="M838 378 L892 389" stroke="#000" stroke-width="3" fill="none"/>
+              <path d="M971 290 L971 328" stroke="#000" stroke-width="3" fill="none"/>
+            </svg>
+            <figcaption><span class="caption-label">Figure B</span>The second diagram moves beyond form rendering into orchestration. Task templates package forms with timing, dependencies, assignees, schedules, and reminders so the same source definition can drive queue creation, escalation, and audit evidence.</figcaption>
+          </figure>
+        </section>
+
+        <section class="section" id="versioning">
+          <div class="section-head">
+            <div class="section-tag">Panel 06</div>
+            <h2>Version Rail</h2>
+          </div>
+          <p>Once authoring becomes the unit of change, versioning stops being optional. Every published form needs an identity that survives revision. A submission is only interpretable if the system can answer which schema version rendered it, which rules were active at the time, and whether later changes altered the meaning of a field. In practice that pushes the product toward a release model with draft, review, published, superseded, and sometimes retired states. The point is not process theater. The point is reproducibility.</p>
+          <p>A good version rail also protects reuse. Templates that reference shared forms or rule fragments need predictable compatibility boundaries. Minor changes may add a field or tighten a message. Major changes may rename keys, alter approval semantics, or require migration handling for in-flight tasks. This is why a builder product often benefits from separating authoring storage from runtime packages. Authors edit living documents; the renderer consumes immutable published bundles. That split keeps active operations insulated from half-finished edits while still allowing iterative UAT cycles before release.</p>
+          <p>Audit events should therefore point to published versions, not vague form names. When a warehouse lead reviews a disputed completion, the system should show the exact schema revision, the user role, the task template, the validation outcomes, and the timeline of assignment and submission events. Only then can analytics on completion rate, turnaround time, or data quality be interpreted responsibly. Otherwise the metrics mix unlike definitions and call it a trend.</p>
+          <p>The subtle benefit is historical honesty. If a site suddenly appears worse after a validation change, the system should reveal that the definition tightened rather than implying that operator behavior alone deteriorated. Versioned products can tell that truth because they record both the process event and the governing specification. Unversioned products end up telling cleaner stories than the evidence deserves.</p>
+
+          <div class="grid-two">
+            <div class="snippet">
+              <div class="code-label">Published Package</div>
+              <pre><code>{
+  "schemaVersion": "3.2.0",
+  "publishedAt": "2026-04-26T09:00:00Z",
+  "publishedBy": "ops-platform-admin",
+  "hash": "8d5c...b21f",
+  "compatibility": {
+    "supersedes": "3.1.4",
+    "migrationRequired": false
+  }
+}</code></pre>
+            </div>
+            <div class="snippet">
+              <div class="code-label">Audit Event</div>
+              <pre><code>{
+  "eventType": "form.submitted",
+  "templateId": "cold-chain-receipt",
+  "schemaVersion": "3.2.0",
+  "actorRole": "gate-clerk",
+  "taskId": "tsk_44718",
+  "validationStatus": "passed"
+}</code></pre>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="governance">
+          <div class="section-head">
+            <div class="section-tag">Panel 07</div>
+            <h2>Governance and Auditability</h2>
+          </div>
+          <p>The final architectural question is not whether the builder can create forms quickly. It is whether the resulting operational record can be trusted. Governance in this context is concrete. Who can author a schema? Who can publish it? Which templates are allowed to target which roles? Which rule changes require signoff? Which recurring jobs may create notifications outside working hours? How are deprecated forms retired without breaking trend reporting? These are not edge concerns appended after launch. They are part of the build.</p>
+          <p>That is why auditability is a first-class outcome rather than a reporting add-on. Every material event should be inspectable: schema edits, approvals, publication, task instantiation, assignment, reminder dispatch, submission, rejection, override, reopen, and closure. If a supervisor asks why turnaround time improved after a policy change, the system should make that question answerable without forensic scraping. If quality analysts see a sudden drop in completion rate at one site, they should be able to test whether the cause was staffing, scheduling, a stricter validation rule, or a new template dependency. A governed form builder is valuable because it turns operational change into something legible.</p>
+          <p>The analytics layer matters here, but only as a disciplined consumer of audited events. Completion rates, turnaround time, and data quality become credible when they are derived from stable schema versions and recorded task lifecycles. UAT then has a specific role: not polishing a UI in the abstract, but checking whether authoring is fast enough, whether reuse actually reduces duplicated definitions, and whether rule changes behave predictably in production-like workflows. In that sense the builder is less like a canvas and more like a fabrication line with inspection points.</p>
+          <table class="plain-table" aria-label="Governance controls">
+            <thead>
+              <tr>
+                <th>Control Point</th>
+                <th>Why It Exists</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Author vs. publisher permissions</td>
+                <td>Prevents draft convenience from becoming uncontrolled production change.</td>
+              </tr>
+              <tr>
+                <td>Schema version pinned on every submission</td>
+                <td>Preserves interpretability of historical records and downstream metrics.</td>
+              </tr>
+              <tr>
+                <td>Template audit events for assignment and escalation</td>
+                <td>Lets operations explain lateness, retries, and ownership without manual reconstruction.</td>
+              </tr>
+              <tr>
+                <td>Measured UAT before publish</td>
+                <td>Checks authoring speed, rule behavior, and reuse quality before release enters live workflow.</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>The closing architectural claim is simple. A schema-driven logistics form builder is worthwhile when it relocates routine change from engineering throughput into governed operational authoring without sacrificing traceability. The renderer must stay thin. The schema must stay explicit. Validation must express business insistence. Templates must join data capture to work execution. Versions must pin meaning. Audits must survive disagreement. When those pieces hold together, the product stops being a no-code slogan and becomes what logistics software usually needs most: a controlled way to change fast without losing the record of what changed, why it changed, and which process ran under which definition.</p>
+        </section>
+      </main>
+    </div>
+
+    <footer class="foot">
+      <div>Self-contained HTML. No scripts, no external CSS, no external images, inline SVG only.</div>
+      <div>Visual language: monochrome builder panels, rectilinear cards, crisp dividers, governed assembly.</div>
+    </footer>
+  </div>
+</body>
+</html>
