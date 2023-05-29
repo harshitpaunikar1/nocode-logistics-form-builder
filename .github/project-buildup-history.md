@@ -76,3 +76,7 @@
 
 - Task summary: Spent another hour on this: cleaned up the cell ordering in the notebook so it reads top to bottom without jumping around.
 - Deliverable: Solid now, moving on.
+## 2023-05-29 - Day 12: Polish wrap
+
+- Task summary: Ended up revisiting this in the evening — added a sanity check assertion that would catch obvious data shape issues early.
+- Deliverable: Cleaner than this morning's version.
