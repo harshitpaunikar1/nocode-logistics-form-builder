@@ -4,7 +4,7 @@
 
 ## Overview
 
-Many logistics teams rely on developers for simple form changes, delaying launches and creating bottlenecks. Manual form creation leads to inconsistent data capture, limited task automation, and poor visibility into operational status. Scheduling repetitive checks still happens offline, causing missed steps and rework. Without a flexible, self-serve way to design forms and bundle them into tasks, teams face slower deployment cycles, higher coordination costs, and avoidable errors — especially during peak volumes when agility and standardisation matter most.
+Many logistics teams rely on developers for simple form changes, delaying launches and creating bottlenecks. Manual form creation leads to inconsistent data capture, limited task automation, and poor visibility into operational status. Scheduling repetitive checks still happens offline, causing missed steps and rework. Without a flexible, self-serve way to design forms and bundle them into tasks, teams face slower deployment cycles, higher coordination costs, and avoidable errors - especially during peak volumes when agility and standardisation matter most.
 
 ## Approach
 

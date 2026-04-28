@@ -10,7 +10,7 @@
 - Deliverable: By the end of the day I had problem statement written down in a rough way, which was enough to stop guessing and move into the next step. It was not super polished, just stable enough that I felt okay moving forward.
 ## 2023-05-14 - Day 1: Problem discovery start
 
-- Task summary: Weekend fix — the visualizations had overlapping labels in narrow viewports. Adjusted the figure size and padding.
+- Task summary: Weekend fix - the visualizations had overlapping labels in narrow viewports. Adjusted the figure size and padding.
 - Deliverable: Solid now, moving on.
 ## 2023-05-15 - Day 2: Research pass
 
@@ -38,7 +38,7 @@
 - Deliverable: Ended the day with system sketch in hand, plus a few side notes on what still needed fixing later. There were still a couple of loose parts, but nothing serious enough to block the next step.
 ## 2023-05-20 - Day 5: Content outline
 
-- Task summary: Half-day Saturday session. Decided to finish the README section I skipped on Friday — cleaner now.
+- Task summary: Half-day Saturday session. Decided to finish the README section I skipped on Friday - cleaner now.
 - Deliverable: One of those satisfying small wins.
 ## 2023-05-22 - Day 7: HTML scaffold
 
@@ -46,8 +46,8 @@
 - Deliverable: Ended the day with initial UI structure in hand, plus a few side notes on what still needed fixing later. It was not super polished, just stable enough that I felt okay moving forward.
 ## 2023-05-22 - Day 7: HTML scaffold
 
-- Task summary: Noticed something off from this morning — spent time just reading back through everything to make sure it still made sense end to end.
-- Deliverable: Nothing dramatic — just keeping things tidy.
+- Task summary: Noticed something off from this morning - spent time just reading back through everything to make sure it still made sense end to end.
+- Deliverable: Nothing dramatic - just keeping things tidy.
 ## 2023-05-23 - Day 8: Styling
 
 - Task summary: This was the middle stretch where the project started feeling real. I kept going and tried to apply layout, spacing, color, and typography until the project reads clearly, then cleaned up whatever looked confusing or weak from the earlier days. Once the base made some sense, I could finally move a bit faster and stop second guessing every tiny decision. I was also trying to keep the idea grounded so it did not drift into random features for no reason.
@@ -66,7 +66,7 @@
 - Deliverable: Ended the day with project README in hand, plus a few side notes on what still needed fixing later. I also left myself a few rough reminders for the next day so I would not have to rediscover the same context again.
 ## 2023-05-27 - Day 10: Artifacts
 
-- Task summary: Half-day Saturday session. Decided to finish the README section I skipped on Friday — cleaner now.
+- Task summary: Half-day Saturday session. Decided to finish the README section I skipped on Friday - cleaner now.
 - Deliverable: Good enough to not be embarrassing.
 ## 2023-05-29 - Day 12: Polish wrap
 
@@ -78,5 +78,5 @@
 - Deliverable: Solid now, moving on.
 ## 2023-05-29 - Day 12: Polish wrap
 
-- Task summary: Ended up revisiting this in the evening — added a sanity check assertion that would catch obvious data shape issues early.
+- Task summary: Ended up revisiting this in the evening - added a sanity check assertion that would catch obvious data shape issues early.
 - Deliverable: Cleaner than this morning's version.
